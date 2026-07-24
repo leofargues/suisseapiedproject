@@ -37,8 +37,34 @@ export default function Navbar({ darkMode, setDarkMode, onResetData, syncStatus,
             
             {/* Mobile Actions Controls (Only on mobile to save space) */}
             <div className="flex sm:hidden items-center space-x-2">
-              <button onClick={() => setDarkMode(!darkMode)} className="p-2 rounded-xl bg-slate-100 dark:bg-emerald-950/90 text-slate-800 dark:text-amber-300">
-                {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              <button
+                onClick={() => setIsKeyModalOpen(true)}
+                className={`h-9 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border shadow-sm shrink-0 ${
+                  syncStatus === 'syncing'
+                    ? 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300 border-amber-300 dark:border-amber-800 hover:bg-amber-200 dark:hover:bg-amber-900'
+                    : syncStatus === 'cloud'
+                      ? 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-200 dark:hover:bg-emerald-900'
+                      : 'bg-slate-100 text-slate-700 dark:bg-slate-900 dark:text-slate-300 border-slate-300 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800'
+                }`}
+                title="Gérer la clé de synchronisation multi-appareils"
+                aria-label="Clé de synchronisation"
+              >
+                {syncStatus === 'syncing' ? (
+                  <RefreshCw className="h-4 w-4 animate-spin text-amber-600 dark:text-amber-400 shrink-0" />
+                ) : syncStatus === 'cloud' ? (
+                  <Cloud className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                ) : (
+                  <CloudOff className="h-4 w-4 text-slate-500 dark:text-slate-400 shrink-0" />
+                )}
+                <Key className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+              </button>
+
+              <button 
+                onClick={() => setDarkMode(!darkMode)} 
+                className="h-9 w-9 rounded-xl bg-slate-100 dark:bg-emerald-950/90 text-slate-800 dark:text-amber-300 flex items-center justify-center border border-slate-200 dark:border-emerald-800/80 shadow-sm"
+                aria-label="Changer de thème"
+              >
+                {darkMode ? <Sun className="h-4 w-4 text-amber-400 fill-amber-400/20" /> : <Moon className="h-4 w-4 text-emerald-800" />}
               </button>
             </div>
           </div>
