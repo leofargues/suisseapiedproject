@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-display: 'Outfit', system-ui, sans-serif;
+  
+  --color-pine-950: #06110a;
+  --color-pine-900: #0d2314;
+  --color-pine-800: #14351e;
+  --color-pine-700: #1b4929;
+  --color-pine-600: #26653a;
+  --color-pine-500: #33854d;
+  --color-pine-400: #46a463;
+  --color-pine-100: #e2f4e8;
+  
+  --color-sage-500: #5b7e65;
+  --color-sage-100: #eef4f0;
+  
+  --color-stone-950: #090d16;
+  --color-stone-900: #0f172a;
+  --color-stone-800: #1e293b;
+  --color-stone-700: #334155;
+  --color-stone-600: #475569;
+  --color-stone-100: #f1f5f9;
+}
+
+@layer base {
+  :root {
+    --bg-main: #f8f9fa;
+    --bg-card: #ffffff;
+    --border-color: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+  }
+
+  html.dark {
+    --bg-main: #07100b;
+    --bg-card: #0e1b12;
+    --border-color: #1a3222;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    color-scheme: dark;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    transition: background-color 0.25s ease, color 0.25s ease;
+    min-height: 100vh;
+  }
+}
+
+/* Custom topo pattern background */
+.topo-pattern {
+  background-image: radial-gradient(rgba(38, 101, 58, 0.08) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+.dark .topo-pattern {
+  background-image: radial-gradient(rgba(70, 164, 99, 0.12) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Glassmorphism styling with explicit light & dark modes */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.dark .glass-panel {
+  background: rgba(14, 27, 18, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(28, 54, 36, 0.9);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #1c3624;
+}
