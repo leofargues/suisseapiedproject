@@ -680,7 +680,7 @@ export default function App() {
       />
 
       {/* Mobile Fixed Floating Bottom Navigation Bar (Main Pages) */}
-      <nav className="sm:hidden fixed bottom-4 left-4 right-4 z-50 max-w-[360px] mx-auto bg-white/55 dark:bg-slate-900/60 backdrop-blur-md border border-white/80 dark:border-white/15 p-1.5 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] ring-1 ring-black/5 dark:ring-white/10 transition-all">
+      <nav className="sm:hidden fixed bottom-6 left-6 right-6 z-50 max-w-[360px] mx-auto bg-white/55 dark:bg-slate-900/60 backdrop-blur-md border border-white/80 dark:border-white/15 p-1.5 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] ring-1 ring-black/5 dark:ring-white/10 transition-all">
         <div className="grid grid-cols-3 gap-1">
           <button
             onClick={() => setMainAppPage('entrainement')}
