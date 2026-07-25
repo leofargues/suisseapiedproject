@@ -6,10 +6,12 @@ import {
   getStoredMetrics, 
   getStoredNotes,
   getStoredLogistics,
+  getStoredStageLogs,
   saveStoredSessions, 
   saveStoredMetrics, 
   saveStoredNotes,
-  saveStoredLogistics
+  saveStoredLogistics,
+  saveStoredStageLogs
 } from './storage';
 
 export { getSyncKey, setSyncKey };
@@ -24,14 +26,15 @@ export const loadData = async (targetKey) => {
       sessions: getStoredSessions(syncKey),
       metrics: getStoredMetrics(syncKey),
       notes: getStoredNotes(syncKey),
-      logistics: getStoredLogistics(syncKey)
+      logistics: getStoredLogistics(syncKey),
+      stageLogs: getStoredStageLogs(syncKey)
     };
   }
 
   try {
     const { data, error } = await supabase
       .from('suisse_prep_data')
-      .select('sessions, metrics, notes, logistics')
+      .select('sessions, metrics, notes, logistics, stage_logs')
       .eq('sync_key', syncKey)
       .maybeSingle();
 
@@ -41,12 +44,11 @@ export const loadData = async (targetKey) => {
     }
 
     if (!data) {
-      // Row doesn't exist yet for this sync key in Cloud. 
-      // Initialize it strictly with the key's isolated local storage (which is empty if it's a new custom key).
       const localSessions = getStoredSessions(syncKey);
       const localMetrics = getStoredMetrics(syncKey);
       const localNotes = getStoredNotes(syncKey);
       const localLogistics = getStoredLogistics(syncKey);
+      const localStageLogs = getStoredStageLogs(syncKey);
 
       await supabase.from('suisse_prep_data').insert({
         sync_key: syncKey,
@@ -54,6 +56,7 @@ export const loadData = async (targetKey) => {
         metrics: localMetrics,
         notes: localNotes,
         logistics: localLogistics,
+        stage_logs: localStageLogs,
         updated_at: new Date().toISOString()
       });
 
@@ -62,20 +65,21 @@ export const loadData = async (targetKey) => {
         sessions: localSessions,
         metrics: localMetrics,
         notes: localNotes,
-        logistics: localLogistics
+        logistics: localLogistics,
+        stageLogs: localStageLogs
       };
     }
 
-    // Remote data exists! Strict pull from cloud to local for this key.
     let finalSessions = data.sessions || [];
     let finalMetrics = data.metrics || [];
     let finalNotes = data.notes || [];
     let finalLogistics = data.logistics || [];
+    let finalStageLogs = data.stage_logs || {};
 
-    // Smart Recovery: Check if the local storage FOR THIS KEY has sessions that failed to upload to the cloud
     const localSessions = getStoredSessions(syncKey);
     const localNotes = getStoredNotes(syncKey);
     const localLogistics = getStoredLogistics(syncKey);
+    const localStageLogs = getStoredStageLogs(syncKey);
     let needsUpload = false;
 
     const remoteSessionIds = new Set(finalSessions.map(s => s.id));
@@ -102,7 +106,14 @@ export const loadData = async (targetKey) => {
       }
     });
 
-    // If we recovered unsynced tasks, force an upsert to the cloud immediately
+    // Merge stage_logs
+    Object.keys(localStageLogs).forEach(stageId => {
+      if (!finalStageLogs[stageId]) {
+        finalStageLogs[stageId] = localStageLogs[stageId];
+        needsUpload = true;
+      }
+    });
+
     if (needsUpload) {
       await supabase.from('suisse_prep_data').upsert({
         sync_key: syncKey,
@@ -110,6 +121,7 @@ export const loadData = async (targetKey) => {
         metrics: finalMetrics,
         notes: finalNotes,
         logistics: finalLogistics,
+        stage_logs: finalStageLogs,
         updated_at: new Date().toISOString()
       }, { onConflict: 'sync_key' });
     }
@@ -118,13 +130,15 @@ export const loadData = async (targetKey) => {
     if (finalMetrics) saveStoredMetrics(finalMetrics, syncKey);
     if (finalNotes) saveStoredNotes(finalNotes, syncKey);
     if (finalLogistics) saveStoredLogistics(finalLogistics, syncKey);
+    if (finalStageLogs) saveStoredStageLogs(finalStageLogs, syncKey);
 
     return {
       source: 'cloud',
       sessions: finalSessions,
       metrics: finalMetrics,
       notes: finalNotes,
-      logistics: finalLogistics
+      logistics: finalLogistics,
+      stageLogs: finalStageLogs
     };
   } catch (err) {
     console.warn("Supabase fetch failed, falling back to LocalStorage:", err);
@@ -135,19 +149,20 @@ export const loadData = async (targetKey) => {
     sessions: getStoredSessions(syncKey),
     metrics: getStoredMetrics(syncKey),
     notes: getStoredNotes(syncKey),
-    logistics: getStoredLogistics(syncKey)
+    logistics: getStoredLogistics(syncKey),
+    stageLogs: getStoredStageLogs(syncKey)
   };
 };
 
 // Push data updates to Cloud + LocalStorage
-export const syncData = async (sessions, metrics, notes, logistics, targetKey) => {
+export const syncData = async (sessions, metrics, notes, logistics, stageLogs, targetKey) => {
   const syncKey = targetKey ? setSyncKey(targetKey) : getSyncKey();
 
-  // Always update LocalStorage immediately for instant UI responsiveness
   saveStoredSessions(sessions, syncKey);
   saveStoredMetrics(metrics, syncKey);
   saveStoredNotes(notes, syncKey);
   saveStoredLogistics(logistics, syncKey);
+  if (stageLogs) saveStoredStageLogs(stageLogs, syncKey);
 
   if (!isSupabaseConfigured || !supabase) {
     return { success: true, mode: 'local' };
@@ -162,6 +177,7 @@ export const syncData = async (sessions, metrics, notes, logistics, targetKey) =
         metrics,
         notes,
         logistics,
+        stage_logs: stageLogs || {},
         updated_at: new Date().toISOString()
       }, { onConflict: 'sync_key' });
 
@@ -192,12 +208,13 @@ export const subscribeToCloudChanges = (onDataReceived, targetKey) => {
       },
       (payload) => {
         if (payload.new && payload.new.sync_key === syncKey) {
-          const { sessions, metrics, notes, logistics } = payload.new;
+          const { sessions, metrics, notes, logistics, stage_logs } = payload.new;
           if (sessions) saveStoredSessions(sessions, syncKey);
           if (metrics) saveStoredMetrics(metrics, syncKey);
           if (notes) saveStoredNotes(notes, syncKey);
           if (logistics) saveStoredLogistics(logistics, syncKey);
-          onDataReceived({ sessions, metrics, notes, logistics });
+          if (stage_logs) saveStoredStageLogs(stage_logs, syncKey);
+          onDataReceived({ sessions, metrics, notes, logistics, stageLogs: stage_logs });
         }
       }
     )

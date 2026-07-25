@@ -99,6 +99,28 @@ export const saveStoredLogistics = (logistics, syncKey) => {
   }
 };
 
+export const getStoredStageLogs = (syncKey) => {
+  const k = syncKey || getSyncKey();
+  try {
+    const data = localStorage.getItem(getKeyName('stage_logs', k));
+    if (data) return JSON.parse(data);
+    const legacy = localStorage.getItem('suisse2027_stage_logs');
+    if (legacy) return JSON.parse(legacy);
+    return {};
+  } catch (e) {
+    console.error("Error loading stage_logs", e);
+    return {};
+  }
+};
+
+export const saveStoredStageLogs = (stageLogs, syncKey) => {
+  try {
+    localStorage.setItem(getKeyName('stage_logs', syncKey), JSON.stringify(stageLogs));
+  } catch (e) {
+    console.error("Error saving stage_logs", e);
+  }
+};
+
 export const exportDataToJson = (sessions, metrics, notes, logistics, syncKey) => {
   const k = syncKey || getSyncKey();
   

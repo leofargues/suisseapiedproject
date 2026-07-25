@@ -22,6 +22,7 @@ import {
   getStoredMetrics,
   getStoredNotes,
   getStoredLogistics,
+  getStoredStageLogs,
   resetAllData,
   exportDataToJson,
   importDataFromJson,
@@ -45,6 +46,7 @@ export default function App() {
   const [metrics, setMetrics] = useState(() => getStoredMetrics(syncKey));
   const [notes, setNotes] = useState(() => getStoredNotes(syncKey));
   const [logistics, setLogistics] = useState(() => getStoredLogistics(syncKey));
+  const [stageLogs, setStageLogs] = useState(() => getStoredStageLogs(syncKey));
   const [syncStatus, setSyncStatus] = useState(isSupabaseConfigured ? 'cloud' : 'local');
 
   const [activeTab, setActiveTab] = useState(() => {
@@ -87,6 +89,7 @@ export default function App() {
         setMetrics(loaded.metrics || []);
         setNotes(loaded.notes || []);
         setLogistics(loaded.logistics || []);
+        setStageLogs(loaded.stageLogs || {});
         const mode = loaded.source === 'cloud' ? 'cloud' : 'local';
         setSyncStatus(mode);
 
@@ -130,10 +133,11 @@ export default function App() {
   // Subscribe to realtime updates from other devices for the active syncKey
   useEffect(() => {
     const unsubscribe = subscribeToCloudChanges((remoteData) => {
-      setSessions(remoteData.sessions || []);
-      setMetrics(remoteData.metrics || []);
-      setNotes(remoteData.notes || []);
-      setLogistics(remoteData.logistics || []);
+      if (remoteData.sessions) setSessions(remoteData.sessions);
+      if (remoteData.metrics) setMetrics(remoteData.metrics);
+      if (remoteData.notes) setNotes(remoteData.notes);
+      if (remoteData.logistics) setLogistics(remoteData.logistics);
+      if (remoteData.stageLogs) setStageLogs(remoteData.stageLogs);
       setSyncStatus('cloud');
       addSyncLog({
         type: 'success',
@@ -167,7 +171,7 @@ export default function App() {
     setLogistics(newLogistics);
 
     setSyncStatus('syncing');
-    const result = await syncData(newSessions, newMetrics, newNotes, newLogistics, syncKey);
+    const result = await syncData(newSessions, newMetrics, newNotes, newLogistics, stageLogs, syncKey);
     const mode = result.mode === 'cloud' ? 'cloud' : 'local';
     setSyncStatus(mode);
 
@@ -499,7 +503,10 @@ export default function App() {
 
         {mainAppPage === 'carte' && (
           <div className="max-w-7xl mx-auto py-2">
-            <MapSection />
+            <MapSection 
+              stageLogs={stageLogs}
+              onUpdateStageLogs={handlePersistStageLogs}
+            />
           </div>
         )}
 

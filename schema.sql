@@ -8,8 +8,12 @@ CREATE TABLE IF NOT EXISTS suisse_prep_data (
   metrics JSONB NOT NULL DEFAULT '[]'::jsonb,
   notes JSONB NOT NULL DEFAULT '[]'::jsonb,
   logistics JSONB NOT NULL DEFAULT '[]'::jsonb,
+  stage_logs JSONB NOT NULL DEFAULT '{}'::jsonb,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Si la table existe déjà, ajouter la colonne stage_logs si elle manque :
+ALTER TABLE suisse_prep_data ADD COLUMN IF NOT EXISTS stage_logs JSONB NOT NULL DEFAULT '{}'::jsonb;
 
 -- 2. Activer RLS
 ALTER TABLE suisse_prep_data ENABLE ROW LEVEL SECURITY;
