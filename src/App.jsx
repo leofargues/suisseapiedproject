@@ -508,54 +508,51 @@ export default function App() {
         )}
 
         {mainAppPage === 'parametre' && (
-          <div className="flex flex-col items-center justify-center py-20 text-slate-500 dark:text-slate-400">
-            <h2 className="text-xl font-bold mb-2 text-slate-700 dark:text-slate-200">Paramètres</h2>
-            <p>Page en cours de développement...</p>
+          <div className="max-w-4xl mx-auto py-6 space-y-6">
+            <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200">Paramètres</h2>
+            
+            {/* Export & Local Backup Banner */}
+            <div className="p-6 rounded-3xl bg-white/90 dark:bg-emerald-950/90 border border-slate-200 dark:border-emerald-800/80 text-slate-900 dark:text-white shadow-xl shadow-slate-200/60 dark:shadow-emerald-950/50 flex flex-col md:flex-row items-center justify-between gap-6 transition-colors">
+              <div className="flex items-center space-x-4">
+                <div className="h-12 w-12 rounded-2xl bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-300 dark:border-emerald-500/40 flex items-center justify-center text-emerald-800 dark:text-emerald-400 shrink-0 shadow-sm">
+                  <HardDrive className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold font-display text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>Exportation & Sauvegarde Locale</span>
+                    <span className="text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 dark:bg-emerald-500/20 dark:text-emerald-300 font-extrabold border border-emerald-300 dark:border-emerald-500/30">JSON Local</span>
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-emerald-200/80 mt-0.5 leading-relaxed font-medium">
+                    Sauvegardez l'ensemble de vos données (séances, métriques physiques et carnet de terrain) directement sur votre appareil.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 w-full md:w-auto shrink-0 justify-stretch md:justify-end">
+                <button
+                  onClick={handleExportData}
+                  className="flex-1 md:flex-none px-5 py-3 rounded-2xl bg-emerald-800 hover:bg-emerald-900 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white text-xs sm:text-sm font-extrabold font-display transition-all shadow-md shadow-emerald-900/20 dark:shadow-emerald-950/50 flex items-center justify-center gap-2.5 active:scale-95 cursor-pointer"
+                  title="Télécharger le fichier JSON et forcer la sauvegarde locale"
+                >
+                  <Download className="h-4 w-4" />
+                  <span>Exporter en local (.JSON)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsImportWarningOpen(true)}
+                  className="px-4 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-emerald-900/60 dark:hover:bg-emerald-900 text-slate-800 dark:text-slate-200 text-xs sm:text-sm font-bold transition-all border border-slate-300 dark:border-emerald-700/60 flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                  title="Avertissement : L'importation remplace les données existantes"
+                >
+                  <Upload className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
+                  <span>Importer</span>
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
       </main>
-
-      {/* Bottom Export & Local Backup Banner */}
-      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-4">
-        <div className="p-6 rounded-3xl bg-white/90 dark:bg-emerald-950/90 border border-slate-200 dark:border-emerald-800/80 text-slate-900 dark:text-white shadow-xl shadow-slate-200/60 dark:shadow-emerald-950/50 flex flex-col md:flex-row items-center justify-between gap-6 transition-colors">
-          <div className="flex items-center space-x-4">
-            <div className="h-12 w-12 rounded-2xl bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-300 dark:border-emerald-500/40 flex items-center justify-center text-emerald-800 dark:text-emerald-400 shrink-0 shadow-sm">
-              <HardDrive className="h-6 w-6" />
-            </div>
-            <div>
-              <h3 className="text-base font-extrabold font-display text-slate-900 dark:text-white flex items-center gap-2">
-                <span>Exportation & Sauvegarde Locale</span>
-                <span className="text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 dark:bg-emerald-500/20 dark:text-emerald-300 font-extrabold border border-emerald-300 dark:border-emerald-500/30">JSON Local</span>
-              </h3>
-              <p className="text-xs text-slate-600 dark:text-emerald-200/80 mt-0.5 leading-relaxed font-medium">
-                Sauvegardez l'ensemble de vos données (séances, métriques physiques et carnet de terrain) directement sur votre appareil.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto shrink-0 justify-stretch md:justify-end">
-            <button
-              onClick={handleExportData}
-              className="flex-1 md:flex-none px-5 py-3 rounded-2xl bg-emerald-800 hover:bg-emerald-900 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white text-xs sm:text-sm font-extrabold font-display transition-all shadow-md shadow-emerald-900/20 dark:shadow-emerald-950/50 flex items-center justify-center gap-2.5 active:scale-95 cursor-pointer"
-              title="Télécharger le fichier JSON et forcer la sauvegarde locale"
-            >
-              <Download className="h-4 w-4" />
-              <span>Exporter en local (.JSON)</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setIsImportWarningOpen(true)}
-              className="px-4 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-emerald-900/60 dark:hover:bg-emerald-900 text-slate-800 dark:text-slate-200 text-xs sm:text-sm font-bold transition-all border border-slate-300 dark:border-emerald-700/60 flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-              title="Avertissement : L'importation remplace les données existantes"
-            >
-              <Upload className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
-              <span>Importer</span>
-            </button>
-          </div>
-        </div>
-      </div>
 
 
       {/* Hidden File Input for Import */}
@@ -682,43 +679,43 @@ export default function App() {
         }}
       />
 
-      {/* Mobile Fixed Bottom Navigation Bar (Main Pages) */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-md border-t border-slate-200 dark:border-emerald-900/80 px-2 pt-2.5 pb-5 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.4)]">
-        <div className="grid grid-cols-3 gap-1 max-w-md mx-auto">
+      {/* Mobile Fixed Floating Bottom Navigation Bar (Main Pages) */}
+      <nav className="sm:hidden fixed bottom-4 left-4 right-4 z-50 max-w-[360px] mx-auto bg-white/55 dark:bg-slate-900/60 backdrop-blur-md border border-white/80 dark:border-white/15 p-1.5 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] ring-1 ring-black/5 dark:ring-white/10 transition-all">
+        <div className="grid grid-cols-3 gap-1">
           <button
             onClick={() => setMainAppPage('entrainement')}
-            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all ${
+            className={`flex flex-col items-center justify-center py-2 px-2 rounded-full transition-all duration-200 ${
               mainAppPage === 'entrainement'
-                ? 'text-emerald-800 dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-900/60 font-extrabold'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 font-medium'
+                ? 'text-emerald-900 dark:text-emerald-300 bg-emerald-500/20 dark:bg-emerald-400/20 font-extrabold shadow-xs border border-emerald-500/30 dark:border-emerald-400/30'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100/50 dark:hover:bg-white/5 font-medium border border-transparent'
             }`}
           >
-            <Activity className={`h-5 w-5 ${mainAppPage === 'entrainement' ? 'scale-110' : ''} transition-transform`} />
-            <span className="text-[10px] mt-0.5 truncate">Entraînement</span>
+            <Activity className={`h-5 w-5 ${mainAppPage === 'entrainement' ? 'scale-110' : ''} transition-transform duration-200`} />
+            <span className="text-[10px] mt-0.5 tracking-tight truncate">Entraînement</span>
           </button>
 
           <button
             onClick={() => setMainAppPage('logistique')}
-            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all ${
+            className={`flex flex-col items-center justify-center py-2 px-2 rounded-full transition-all duration-200 ${
               mainAppPage === 'logistique'
-                ? 'text-emerald-800 dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-900/60 font-extrabold'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 font-medium'
+                ? 'text-emerald-900 dark:text-emerald-300 bg-emerald-500/20 dark:bg-emerald-400/20 font-extrabold shadow-xs border border-emerald-500/30 dark:border-emerald-400/30'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100/50 dark:hover:bg-white/5 font-medium border border-transparent'
             }`}
           >
-            <Map className={`h-5 w-5 ${mainAppPage === 'logistique' ? 'scale-110' : ''} transition-transform`} />
-            <span className="text-[10px] mt-0.5 truncate">Logistique</span>
+            <Map className={`h-5 w-5 ${mainAppPage === 'logistique' ? 'scale-110' : ''} transition-transform duration-200`} />
+            <span className="text-[10px] mt-0.5 tracking-tight truncate">Logistique</span>
           </button>
 
           <button
             onClick={() => setMainAppPage('parametre')}
-            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all ${
+            className={`flex flex-col items-center justify-center py-2 px-2 rounded-full transition-all duration-200 ${
               mainAppPage === 'parametre'
-                ? 'text-emerald-800 dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-900/60 font-extrabold'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 font-medium'
+                ? 'text-emerald-900 dark:text-emerald-300 bg-emerald-500/20 dark:bg-emerald-400/20 font-extrabold shadow-xs border border-emerald-500/30 dark:border-emerald-400/30'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100/50 dark:hover:bg-white/5 font-medium border border-transparent'
             }`}
           >
-            <Settings className={`h-5 w-5 ${mainAppPage === 'parametre' ? 'scale-110' : ''} transition-transform`} />
-            <span className="text-[10px] mt-0.5 truncate">Paramètres</span>
+            <Settings className={`h-5 w-5 ${mainAppPage === 'parametre' ? 'scale-110' : ''} transition-transform duration-200`} />
+            <span className="text-[10px] mt-0.5 tracking-tight truncate">Paramètres</span>
           </button>
         </div>
       </nav>
