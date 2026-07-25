@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { NotebookPen, Plus, Flame, Calendar, Trash2, Search } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
 
 const CATEGORIES = ["Tous", "Fatigue", "Équipement", "Sensations", "Nutrition", "Météo"];
 
-export default function NotesSection({ notes, onAddNote, onDeleteNote }) {
+export default function NotesSection() {
+  const { notes, handleAddNote: onAddNote, handleDeleteNote: onDeleteNote } = useAppContext();
   const [selectedCategory, setSelectedCategory] = useState("Tous");
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);

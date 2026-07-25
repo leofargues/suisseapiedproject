@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Flag, Activity, TrendingUp, Compass, Maximize2, Minimize2 } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
+import { DEPARTURE_DATE } from '../services/storage';
 
-export default function CountdownWidget({ departureDate, sessions = [], metrics = [] }) {
+export default function CountdownWidget() {
+  const { sessions, metrics } = useAppContext();
+  const departureDate = DEPARTURE_DATE;
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isCompact, setIsCompact] = useState(() => {
     if (typeof window !== 'undefined') {

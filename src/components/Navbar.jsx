@@ -1,17 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mountain, Sun, Moon, RotateCcw, MapPin, Cloud, CloudOff, RefreshCw, Key, Check, X } from 'lucide-react';
-import { getSyncKey, setSyncKey } from '../services/syncService';
 import { isSupabaseConfigured } from '../services/supabaseClient';
+import { useAppContext } from '../context/AppContext';
 
-export default function Navbar({ darkMode, setDarkMode, onResetData, syncStatus, onKeyChange, onOpenDiagnostic, mainAppPage, onMainAppPageChange }) {
+export default function Navbar({ darkMode, setDarkMode, onOpenDiagnostic, mainAppPage, onMainAppPageChange }) {
+  const { syncKey, setSyncKey, handleReset, syncStatus } = useAppContext();
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
-  const [keyInput, setKeyInput] = useState(getSyncKey());
+  const [keyInput, setKeyInput] = useState(syncKey);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    setKeyInput(syncKey);
+  }, [syncKey]);
 
   const handleKeySubmit = (e) => {
     e.preventDefault();
-    const clean = setSyncKey(keyInput);
-    onKeyChange(clean);
+    setSyncKey(keyInput);
     setIsKeyModalOpen(false);
   };
 
@@ -149,7 +153,7 @@ export default function Navbar({ darkMode, setDarkMode, onResetData, syncStatus,
             <button
               onClick={() => {
                 if (window.confirm("Réinitialiser toutes les données d'entraînement aux valeurs d'exemple ?")) {
-                  onResetData();
+                  handleReset();
                 }
               }}
               title="Réinitialiser les données de démo"

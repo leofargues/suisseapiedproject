@@ -3,23 +3,14 @@ import { Map, MapPin, Navigation, Mountain, ExternalLink, CheckCircle2, Circle, 
 import MapInteractive from './Map/MapInteractive';
 import StageValidationModal from './Map/StageValidationModal';
 import { SWISS_STAGES } from '../data/swissStages';
+import { useAppContext } from '../context/AppContext';
 
-export default function MapSection({ stageLogs: propStageLogs, onUpdateStageLogs }) {
+export default function MapSection() {
+  const { stageLogs, handlePersistStageLogs } = useAppContext();
+  
   const [selectedStage, setSelectedStage] = useState(SWISS_STAGES[0]);
   const [mapType, setMapType] = useState('topo'); // 'topo' or 'standard'
   const [isStatsCollapsed, setIsStatsCollapsed] = useState(false);
-
-  // Fallback local state if props are not provided
-  const [localStageLogs, setLocalStageLogs] = useState(() => {
-    try {
-      const saved = localStorage.getItem('suisse2027_stage_logs');
-      return saved ? JSON.parse(saved) : {};
-    } catch (e) {
-      return {};
-    }
-  });
-
-  const stageLogs = propStageLogs || localStageLogs || {};
 
   const [activeModalStage, setActiveModalStage] = useState(null);
   const [formData, setFormData] = useState({
@@ -79,11 +70,8 @@ export default function MapSection({ stageLogs: propStageLogs, onUpdateStageLogs
       }
     };
 
-    if (onUpdateStageLogs) {
-      onUpdateStageLogs(updatedLogs);
-    } else {
-      setLocalStageLogs(updatedLogs);
-      localStorage.setItem('suisse2027_stage_logs', JSON.stringify(updatedLogs));
+    if (handlePersistStageLogs) {
+      handlePersistStageLogs(updatedLogs);
     }
     setActiveModalStage(null);
   };
@@ -92,11 +80,8 @@ export default function MapSection({ stageLogs: propStageLogs, onUpdateStageLogs
     const updatedLogs = { ...stageLogs };
     delete updatedLogs[stageId];
     
-    if (onUpdateStageLogs) {
-      onUpdateStageLogs(updatedLogs);
-    } else {
-      setLocalStageLogs(updatedLogs);
-      localStorage.setItem('suisse2027_stage_logs', JSON.stringify(updatedLogs));
+    if (handlePersistStageLogs) {
+      handlePersistStageLogs(updatedLogs);
     }
     setActiveModalStage(null);
   };

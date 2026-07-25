@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { X, Cloud, CloudOff, Terminal, RefreshCw, Copy, Check, AlertTriangle, ShieldCheck, Database, Key } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../services/supabaseClient';
 import { getSyncKey } from '../services/storage';
+import { useAppContext } from '../context/AppContext';
 
-export default function DiagnosticModal({ isOpen, onClose, syncLogs, onForceSync }) {
+export default function DiagnosticModal({ isOpen, onClose }) {
+  const { syncLogs, forceSync: onForceSync } = useAppContext();
   const [copied, setCopied] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
   const [testResult, setTestResult] = useState(null);

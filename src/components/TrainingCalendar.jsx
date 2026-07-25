@@ -19,6 +19,7 @@ import {
   X
 } from 'lucide-react';
 import SessionDetailModal from './SessionDetailModal';
+import { useAppContext } from '../context/AppContext';
 
 const SESSION_TYPES = {
   stairclimber: {
@@ -123,7 +124,8 @@ const MONTH_NAMES = [
 
 const DAYS_OF_WEEK = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
-export default function TrainingCalendar({ sessions, onAddSession, onEditSession, onToggleSession, onDeleteSession }) {
+export default function TrainingCalendar({ onAddSession, onEditSession }) {
+  const { sessions, handleToggleSession: onToggleSession, handleDeleteSession: onDeleteSession } = useAppContext();
   const [currentDate, setCurrentDate] = useState(new Date(2026, 6, 1));
   const [viewMode, setViewMode] = useState('month'); // 'month' | 'week' | '3days'
   const [selectedFilter, setSelectedFilter] = useState('all');

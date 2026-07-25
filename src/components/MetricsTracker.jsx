@@ -27,6 +27,7 @@ import {
   Filler
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { useAppContext } from '../context/AppContext';
 
 ChartJS.register(
   CategoryScale,
@@ -71,7 +72,8 @@ const calculateMetricProgress = (metric) => {
   return Math.min(100, Math.max(0, Math.round((current / target) * 100)));
 };
 
-export default function MetricsTracker({ metrics = [], onAddMetricTest, onDeleteMetricTest, darkMode }) {
+export default function MetricsTracker({ darkMode }) {
+  const { metrics, handleAddMetricTest: onAddMetricTest, handleDeleteMetricTest: onDeleteMetricTest } = useAppContext();
   const [selectedMetricKey, setSelectedMetricKey] = useState(metrics[0]?.key || 'vam');
   const [activeModalMetric, setActiveModalMetric] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
