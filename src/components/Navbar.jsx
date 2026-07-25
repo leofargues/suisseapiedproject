@@ -82,6 +82,16 @@ export default function Navbar({ darkMode, setDarkMode, onResetData, syncStatus,
               Entraînement
             </button>
             <button
+              onClick={() => onMainAppPageChange('carte')}
+              className={`px-3 py-2 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
+                mainAppPage === 'carte'
+                  ? 'bg-emerald-100 text-emerald-900 dark:bg-emerald-900/60 dark:text-emerald-300 shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              Carte
+            </button>
+            <button
               onClick={() => onMainAppPageChange('logistique')}
               className={`px-3 py-2 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
                 mainAppPage === 'logistique'
