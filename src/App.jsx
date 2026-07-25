@@ -1,4 +1,40 @@
 import React, { useState, useEffect, useRef } from 'react';
+
+class GlobalErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("GlobalErrorBoundary Caught:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-6 bg-red-100 text-red-900 rounded-xl m-4 border-2 border-red-500">
+          <h2 className="font-bold text-xl mb-4">💥 Crash de l'application !</h2>
+          <p className="mb-2 text-sm font-semibold">Le composant a planté avec l'erreur suivante :</p>
+          <pre className="bg-red-50 p-4 rounded text-xs overflow-auto border border-red-200">
+            {this.state.error && this.state.error.toString()}
+            <br/><br/>
+            {this.state.error && this.state.error.stack}
+          </pre>
+          <button 
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded font-bold hover:bg-red-700"
+            onClick={() => this.setState({ hasError: false, error: null })}
+          >
+            Réessayer de charger
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 import Navbar from './components/Navbar';
 import CountdownWidget from './components/CountdownWidget';
 import TrainingCalendar from './components/TrainingCalendar';
@@ -351,6 +387,18 @@ export default function App() {
     handlePersist(sessions, metrics, notes, updatedLogistics);
   };
 
+  const handlePersistStageLogs = async (newStageLogs) => {
+    setStageLogs(newStageLogs);
+    setSyncStatus('syncing');
+    try {
+      const result = await syncData(sessions, metrics, notes, logistics, newStageLogs, syncKey);
+      const mode = result.mode === 'cloud' ? 'cloud' : 'local';
+      setSyncStatus(mode);
+    } catch (err) {
+      setSyncStatus('local');
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col font-sans transition-colors pb-24 sm:pb-0">
       
@@ -503,10 +551,12 @@ export default function App() {
 
         {mainAppPage === 'carte' && (
           <div className="max-w-7xl mx-auto py-2">
-            <MapSection 
-              stageLogs={stageLogs}
-              onUpdateStageLogs={handlePersistStageLogs}
-            />
+            <GlobalErrorBoundary>
+              <MapSection 
+                stageLogs={stageLogs}
+                onUpdateStageLogs={handlePersistStageLogs}
+              />
+            </GlobalErrorBoundary>
           </div>
         )}
 
