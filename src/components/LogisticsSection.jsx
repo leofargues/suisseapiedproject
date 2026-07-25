@@ -3,7 +3,7 @@ import { Backpack, Plus, Trash2, CheckSquare, Square } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 export default function LogisticsSection() {
-  const { logistics, handleAddLogistics: onAddElement, handleToggleLogistics: onToggleElement, handleDeleteLogistics: onDeleteElement } = useAppContext();
+  const { logistics, handleAddLogisticsElement: onAddElement, handleToggleLogisticsElement: onToggleElement, handleDeleteLogisticsElement: onDeleteElement } = useAppContext();
   const [newItemName, setNewItemName] = useState('');
   const [newItemQuantity, setNewItemQuantity] = useState(1);
 
