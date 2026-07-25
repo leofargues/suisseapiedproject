@@ -7,6 +7,7 @@ import NotesSection from './components/NotesSection';
 import AddSessionModal from './components/AddSessionModal';
 import DiagnosticModal from './components/DiagnosticModal';
 import LogisticsSection from './components/LogisticsSection';
+import MapSection from './components/MapSection';
 
 
 import { 
@@ -29,7 +30,7 @@ import {
 } from './services/storage';
 
 import { isSupabaseConfigured } from './services/supabaseClient';
-import { Calendar, BarChart3, NotebookPen, LayoutDashboard, Download, Upload, HardDrive, AlertTriangle, X, Activity, Map, Settings } from 'lucide-react';
+import { Calendar, BarChart3, NotebookPen, LayoutDashboard, Download, Upload, HardDrive, AlertTriangle, X, Activity, Backpack, Settings, Map } from 'lucide-react';
 
 
 
@@ -379,7 +380,7 @@ export default function App() {
           
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold font-display transition-all whitespace-nowrap ${
+            className={`hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold font-display transition-all whitespace-nowrap ${
               activeTab === 'dashboard'
                 ? 'bg-emerald-800 dark:bg-emerald-600 text-white shadow-md'
                 : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-emerald-950/60'
@@ -494,6 +495,12 @@ export default function App() {
           />
         )}
           </>
+        )}
+
+        {mainAppPage === 'carte' && (
+          <div className="max-w-7xl mx-auto py-2">
+            <MapSection />
+          </div>
         )}
 
         {mainAppPage === 'logistique' && (
@@ -680,42 +687,54 @@ export default function App() {
       />
 
       {/* Mobile Fixed Floating Bottom Navigation Bar (Main Pages) */}
-      <nav className="sm:hidden fixed bottom-6 left-6 right-6 z-50 max-w-[360px] mx-auto bg-white/55 dark:bg-slate-900/60 backdrop-blur-md border border-white/80 dark:border-white/15 p-1.5 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] ring-1 ring-black/5 dark:ring-white/10 transition-all">
-        <div className="grid grid-cols-3 gap-1">
+      <nav className="sm:hidden fixed bottom-6 left-4 right-4 z-50 max-w-[400px] mx-auto bg-white/55 dark:bg-slate-900/60 backdrop-blur-md border border-white/80 dark:border-white/15 p-1.5 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] ring-1 ring-black/5 dark:ring-white/10 transition-all">
+        <div className="grid grid-cols-4 gap-1">
           <button
             onClick={() => setMainAppPage('entrainement')}
-            className={`flex flex-col items-center justify-center py-2 px-2 rounded-full transition-all duration-200 ${
+            className={`flex flex-col items-center justify-center py-2 px-1 rounded-full transition-all duration-200 ${
               mainAppPage === 'entrainement'
                 ? 'text-emerald-900 dark:text-emerald-300 bg-emerald-500/20 dark:bg-emerald-400/20 font-extrabold shadow-xs border border-emerald-500/30 dark:border-emerald-400/30'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100/50 dark:hover:bg-white/5 font-medium border border-transparent'
             }`}
           >
             <Activity className={`h-5 w-5 ${mainAppPage === 'entrainement' ? 'scale-110' : ''} transition-transform duration-200`} />
-            <span className="text-[10px] mt-0.5 tracking-tight truncate">Entraînement</span>
+            <span className="text-[9px] sm:text-[10px] mt-0.5 tracking-tight truncate">Entraînement</span>
+          </button>
+
+          <button
+            onClick={() => setMainAppPage('carte')}
+            className={`flex flex-col items-center justify-center py-2 px-1 rounded-full transition-all duration-200 ${
+              mainAppPage === 'carte'
+                ? 'text-emerald-900 dark:text-emerald-300 bg-emerald-500/20 dark:bg-emerald-400/20 font-extrabold shadow-xs border border-emerald-500/30 dark:border-emerald-400/30'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100/50 dark:hover:bg-white/5 font-medium border border-transparent'
+            }`}
+          >
+            <Map className={`h-5 w-5 ${mainAppPage === 'carte' ? 'scale-110' : ''} transition-transform duration-200`} />
+            <span className="text-[9px] sm:text-[10px] mt-0.5 tracking-tight truncate">Carte</span>
           </button>
 
           <button
             onClick={() => setMainAppPage('logistique')}
-            className={`flex flex-col items-center justify-center py-2 px-2 rounded-full transition-all duration-200 ${
+            className={`flex flex-col items-center justify-center py-2 px-1 rounded-full transition-all duration-200 ${
               mainAppPage === 'logistique'
                 ? 'text-emerald-900 dark:text-emerald-300 bg-emerald-500/20 dark:bg-emerald-400/20 font-extrabold shadow-xs border border-emerald-500/30 dark:border-emerald-400/30'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100/50 dark:hover:bg-white/5 font-medium border border-transparent'
             }`}
           >
-            <Map className={`h-5 w-5 ${mainAppPage === 'logistique' ? 'scale-110' : ''} transition-transform duration-200`} />
-            <span className="text-[10px] mt-0.5 tracking-tight truncate">Logistique</span>
+            <Backpack className={`h-5 w-5 ${mainAppPage === 'logistique' ? 'scale-110' : ''} transition-transform duration-200`} />
+            <span className="text-[9px] sm:text-[10px] mt-0.5 tracking-tight truncate">Logistique</span>
           </button>
 
           <button
             onClick={() => setMainAppPage('parametre')}
-            className={`flex flex-col items-center justify-center py-2 px-2 rounded-full transition-all duration-200 ${
+            className={`flex flex-col items-center justify-center py-2 px-1 rounded-full transition-all duration-200 ${
               mainAppPage === 'parametre'
                 ? 'text-emerald-900 dark:text-emerald-300 bg-emerald-500/20 dark:bg-emerald-400/20 font-extrabold shadow-xs border border-emerald-500/30 dark:border-emerald-400/30'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100/50 dark:hover:bg-white/5 font-medium border border-transparent'
             }`}
           >
             <Settings className={`h-5 w-5 ${mainAppPage === 'parametre' ? 'scale-110' : ''} transition-transform duration-200`} />
-            <span className="text-[10px] mt-0.5 tracking-tight truncate">Paramètres</span>
+            <span className="text-[9px] sm:text-[10px] mt-0.5 tracking-tight truncate">Paramètres</span>
           </button>
         </div>
       </nav>

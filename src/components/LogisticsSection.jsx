@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Package, Plus, Trash2, CheckSquare, Square } from 'lucide-react';
+import { Backpack, Plus, Trash2, CheckSquare, Square } from 'lucide-react';
 
 export default function LogisticsSection({ logistics, onAddElement, onToggleElement, onDeleteElement }) {
   const [newItemName, setNewItemName] = useState('');
@@ -28,7 +28,7 @@ export default function LogisticsSection({ logistics, onAddElement, onToggleElem
       <div className="bg-white dark:bg-emerald-950/40 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-emerald-800/60">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-3 bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-400 rounded-2xl">
-            <Package className="h-6 w-6" />
+            <Backpack className="h-6 w-6" />
           </div>
           <div>
             <h2 className="text-xl font-bold font-display text-slate-900 dark:text-white">Checklist de Départ</h2>
@@ -58,14 +58,14 @@ export default function LogisticsSection({ logistics, onAddElement, onToggleElem
             placeholder="Nouvel équipement..."
             value={newItemName}
             onChange={(e) => setNewItemName(e.target.value)}
-            className="flex-1 px-4 py-3 bg-slate-50 dark:bg-emerald-900/20 border border-slate-200 dark:border-emerald-800/60 rounded-2xl text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-emerald-200/40 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-medium"
+            className="flex-1 min-w-0 px-4 py-3 bg-slate-50 dark:bg-emerald-900/20 border border-slate-200 dark:border-emerald-800/60 rounded-2xl text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-emerald-200/40 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-medium"
           />
           <input
             type="number"
             min="1"
             value={newItemQuantity}
             onChange={(e) => setNewItemQuantity(e.target.value)}
-            className="w-20 px-4 py-3 bg-slate-50 dark:bg-emerald-900/20 border border-slate-200 dark:border-emerald-800/60 rounded-2xl text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-emerald-200/40 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-medium text-center"
+            className="w-12 px-2 py-3 bg-slate-50 dark:bg-emerald-900/20 border border-slate-200 dark:border-emerald-800/60 rounded-2xl text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-emerald-200/40 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-medium text-center"
           />
           <button
             type="submit"
