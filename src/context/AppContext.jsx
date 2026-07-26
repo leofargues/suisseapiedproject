@@ -28,6 +28,25 @@ export function AppProvider({ children }) {
   const [stageLogs, setStageLogs] = useState(() => getStoredStageLogs(syncKey));
   const [syncStatus, setSyncStatus] = useState(isSupabaseConfigured ? 'cloud' : 'local');
   const [syncLogs, setSyncLogs] = useState([]);
+  const [activeOverlays, setActiveOverlays] = useState(new Set());
+
+  const registerOverlay = useCallback((id) => {
+    setActiveOverlays(prev => {
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+  }, []);
+
+  const unregisterOverlay = useCallback((id) => {
+    setActiveOverlays(prev => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }, []);
+
+  const isOverlayOpen = activeOverlays.size > 0;
 
   const addSyncLog = useCallback((logEntry) => {
     const entry = {
@@ -291,7 +310,7 @@ export function AppProvider({ children }) {
       const result = await syncData(sessions, metrics, notes, logistics, newStageLogs, syncKey);
       const mode = result.mode === 'cloud' ? 'cloud' : 'local';
       setSyncStatus(mode);
-    } catch (err) {
+    } catch {
       setSyncStatus('local');
     }
   };
@@ -317,6 +336,7 @@ export function AppProvider({ children }) {
       stageLogs, setStageLogs,
       syncStatus, setSyncStatus,
       syncLogs, setSyncLogs,
+      isOverlayOpen, registerOverlay, unregisterOverlay,
       handleReset,
       handleExportData,
       handleImportDataContent,
@@ -338,6 +358,7 @@ export function AppProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAppContext() {
   const context = useContext(AppContext);
   if (!context) {
