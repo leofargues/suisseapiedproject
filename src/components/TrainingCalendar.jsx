@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -8,11 +8,6 @@ import {
   CheckCircle2, 
   Circle, 
   Calendar as CalendarIcon,
-  Flame,
-  Dumbbell,
-  Footprints,
-  Coffee,
-  Compass,
   Trash2,
   Edit2,
   Eye,
@@ -20,55 +15,10 @@ import {
 } from 'lucide-react';
 import SessionDetailModal from './SessionDetailModal';
 import { useAppContext } from '../context/AppContext';
-
-const SESSION_TYPES = {
-  stairclimber: {
-    label: "Stair Climber",
-    color: "bg-emerald-600 dark:bg-emerald-500 text-white",
-    badge: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700",
-    icon: Flame
-  },
-  treadmill: {
-    label: "Tapis de marche",
-    color: "bg-cyan-600 dark:bg-cyan-500 text-white",
-    badge: "bg-cyan-100 text-cyan-950 dark:bg-cyan-950 dark:text-cyan-300 border-cyan-300 dark:border-cyan-700",
-    icon: Compass
-  },
-  strength: {
-    label: "Musculation / Force",
-    color: "bg-slate-700 dark:bg-slate-400 text-white dark:text-slate-950",
-    badge: "bg-slate-200 text-slate-900 dark:bg-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700",
-    icon: Dumbbell
-  },
-  hike: {
-    label: "Marche Lestée / Rando",
-    color: "bg-amber-600 dark:bg-amber-500 text-white",
-    badge: "bg-amber-100 text-amber-950 dark:bg-amber-950 dark:text-amber-300 border-amber-300 dark:border-amber-700",
-    icon: Footprints
-  },
-  rest: {
-    label: "Repos / Mobilité",
-    color: "bg-teal-600 dark:bg-teal-500 text-white",
-    badge: "bg-teal-100 text-teal-950 dark:bg-teal-950 dark:text-teal-300 border-teal-300 dark:border-teal-700",
-    icon: Coffee
-  }
-};
-
-const getTypeConfig = (type) => {
-  if (type === 'cardio') return SESSION_TYPES.stairclimber;
-  return SESSION_TYPES[type] || SESSION_TYPES.stairclimber;
-};
-
-const getExerciseLines = (exercises) => {
-  if (!exercises) return [];
-  if (Array.isArray(exercises)) {
-    return exercises.map(ex => (typeof ex === 'string' ? ex.trim() : '')).filter(Boolean);
-  }
-  if (typeof exercises === 'string') {
-    return exercises.split('\n').map(ex => ex.trim()).filter(Boolean);
-  }
-  return [];
-};
+import { useCalendar } from '../hooks/useCalendar';
+import { SESSION_TYPES, getTypeConfig } from '../constants/sessionTypes';
+import { DAYS_OF_WEEK } from '../constants/calendarConstants';
+import { getExerciseLines, formatDateStr } from '../utils/sessionUtils';
 
 function SessionMetricsCollapsible({ elevation }) {
   const [expanded, setExpanded] = useState(false);
@@ -117,145 +67,34 @@ function SessionMetricsCollapsible({ elevation }) {
   );
 }
 
-const MONTH_NAMES = [
-  "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", 
-  "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
-];
-
-const DAYS_OF_WEEK = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
-
 const TrainingCalendar = React.memo(({ onAddSession, onEditSession }) => {
   const { sessions, handleToggleSession: onToggleSession, handleDeleteSession: onDeleteSession } = useAppContext();
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 6, 1));
-  const [viewMode, setViewMode] = useState('month'); // 'month' | 'week' | '3days'
-  const [selectedFilter, setSelectedFilter] = useState('all');
-  const [selectedDateStr, setSelectedDateStr] = useState(null);
-  const [detailModalSession, setDetailModalSession] = useState(null);
-
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-
-  const formatDateStr = (dateObj) => {
-    const y = dateObj.getFullYear();
-    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const d = String(dateObj.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  };
-
-  const getMonday = (d) => {
-    const date = new Date(d);
-    const day = date.getDay();
-    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-    return new Date(date.setDate(diff));
-  };
-
-  const handlePrev = () => {
-    if (viewMode === 'month') {
-      setCurrentDate(new Date(year, month - 1, 1));
-    } else if (viewMode === 'week') {
-      const d = new Date(currentDate);
-      d.setDate(d.getDate() - 7);
-      setCurrentDate(d);
-    } else if (viewMode === '3days') {
-      const d = new Date(currentDate);
-      d.setDate(d.getDate() - 3);
-      setCurrentDate(d);
-    }
-  };
-
-  const handleNext = () => {
-    if (viewMode === 'month') {
-      setCurrentDate(new Date(year, month + 1, 1));
-    } else if (viewMode === 'week') {
-      const d = new Date(currentDate);
-      d.setDate(d.getDate() + 7);
-      setCurrentDate(d);
-    } else if (viewMode === '3days') {
-      const d = new Date(currentDate);
-      d.setDate(d.getDate() + 3);
-      setCurrentDate(d);
-    }
-  };
-
-  const handleToday = () => setCurrentDate(new Date());
-
-  const handleSelectViewMode = (mode) => {
-    setViewMode(mode);
-    if (mode === 'week' || mode === '3days') {
-      setCurrentDate(new Date());
-    }
-  };
-
-  let dateRangeText = "";
-  if (viewMode === 'month') {
-    dateRangeText = `${MONTH_NAMES[month]} ${year}`;
-  } else if (viewMode === 'week') {
-    const monday = getMonday(currentDate);
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-    if (monday.getMonth() === sunday.getMonth()) {
-      dateRangeText = `${monday.getDate()} - ${sunday.getDate()} ${MONTH_NAMES[monday.getMonth()]} ${monday.getFullYear()}`;
-    } else {
-      dateRangeText = `${monday.getDate()} ${MONTH_NAMES[monday.getMonth()].slice(0, 3)}. - ${sunday.getDate()} ${MONTH_NAMES[sunday.getMonth()].slice(0, 3)}. ${sunday.getFullYear()}`;
-    }
-  } else if (viewMode === '3days') {
-    const day1 = new Date(currentDate);
-    const day3 = new Date(currentDate);
-    day3.setDate(day1.getDate() + 2);
-    if (day1.getMonth() === day3.getMonth()) {
-      dateRangeText = `${day1.getDate()} - ${day3.getDate()} ${MONTH_NAMES[day1.getMonth()]} ${day1.getFullYear()}`;
-    } else {
-      dateRangeText = `${day1.getDate()} ${MONTH_NAMES[day1.getMonth()].slice(0, 3)}. - ${day3.getDate()} ${MONTH_NAMES[day3.getMonth()].slice(0, 3)}. ${day3.getFullYear()}`;
-    }
-  }
-
-  const firstDayOfMonth = new Date(year, month, 1);
-  const lastDayOfMonth = new Date(year, month + 1, 0);
   
-  let startDayIndex = firstDayOfMonth.getDay() - 1;
-  if (startDayIndex === -1) startDayIndex = 6;
-
-  const totalDaysInMonth = lastDayOfMonth.getDate();
-
-  const sessionsByDate = useMemo(() => {
-    const map = {};
-    sessions.forEach(session => {
-      if (!map[session.date]) {
-        map[session.date] = [];
-      }
-      map[session.date].push(session);
-    });
-    return map;
-  }, [sessions]);
-
-  const selectedDaySessions = selectedDateStr ? (sessionsByDate[selectedDateStr] || []) : [];
-
-  const monthSessions = useMemo(() => sessions.filter(s => {
-    const sDate = new Date(s.date);
-    return sDate.getFullYear() === year && sDate.getMonth() === month;
-  }), [sessions, year, month]);
-
-  const monthCompletedCount = monthSessions.filter(s => s.completed).length;
-  const monthDPlus = monthSessions
-    .filter(s => s.completed)
-    .reduce((acc, curr) => {
-      if (curr.hikeElevationPlus) {
-        return acc + (parseInt(curr.hikeElevationPlus, 10) || 0);
-      }
-      if (curr.elevation) {
-        const match = curr.elevation.match(/D\+\s*:\s*(\d+)m/) || curr.elevation.match(/(\d+)m\s*D\+/);
-        if (match) return acc + (parseInt(match[1], 10) || 0);
-        if (curr.elevation.includes('m D+')) {
-          return acc + (parseInt(curr.elevation.replace(/[^0-9]/g, ''), 10) || 0);
-        }
-      }
-      return acc;
-    }, 0);
-
-  const handleDayClick = (dayNumber) => {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNumber).padStart(2, '0')}`;
-    setSelectedDateStr(dateStr);
-  };
+  const {
+    currentDate,
+    viewMode,
+    selectedFilter,
+    setSelectedFilter,
+    selectedDateStr,
+    setSelectedDateStr,
+    detailModalSession,
+    setDetailModalSession,
+    year,
+    month,
+    dateRangeText,
+    startDayIndex,
+    totalDaysInMonth,
+    sessionsByDate,
+    selectedDaySessions,
+    monthSessions,
+    monthCompletedCount,
+    monthDPlus,
+    handlePrev,
+    handleNext,
+    handleToday,
+    handleSelectViewMode,
+    handleDayClick
+  } = useCalendar(sessions);
 
   return (
     <div className="space-y-6">

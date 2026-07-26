@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Flag, Activity, TrendingUp, Compass, Maximize2, Minimize2 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { DEPARTURE_DATE } from '../services/storage';
+import { calculateGlobalProgress } from '../utils/metricsCalculator';
+import { calculateTotalElevation } from '../utils/sessionUtils';
 
 export default function CountdownWidget() {
   const { sessions, metrics } = useAppContext();
@@ -49,40 +51,12 @@ export default function CountdownWidget() {
     return () => clearInterval(interval);
   }, [departureDate]);
 
-  // Calculate global plan progress based on metrics progression
-  const calculateGlobalProgress = () => {
-    if (!metrics || metrics.length === 0) return '0.0';
-
-    const totalProgress = metrics.reduce((acc, m) => {
-      const current = parseFloat(m.currentValue) || 0;
-      let target = parseFloat(m.targetNumericValue);
-      if (isNaN(target) || target <= 0) {
-        const match = String(m.targetValue || '').match(/([0-9]+(?:\.[0-9]+)?)/);
-        target = match ? parseFloat(match[1]) : 0;
-      }
-      if (target <= 0) return acc;
-      const pct = Math.min(100, Math.max(0, (current / target) * 100));
-      return acc + pct;
-    }, 0);
-
-    const avg = totalProgress / metrics.length;
-    return Number.isInteger(avg) ? avg.toString() : avg.toFixed(1);
-  };
-
-  const progressPercent = calculateGlobalProgress();
+  const progressPercent = calculateGlobalProgress(metrics);
 
   // Statistics from sessions
   const completedSessions = sessions.filter(s => s.completed);
   const totalCompletedCount = completedSessions.length;
-  
-  // Calculate total elevation (D+)
-  const totalElevation = completedSessions.reduce((acc, curr) => {
-    if (curr.elevation && curr.elevation.includes('m D+')) {
-      const val = parseInt(curr.elevation.replace(/[^0-9]/g, ''), 10);
-      return acc + (isNaN(val) ? 0 : val);
-    }
-    return acc;
-  }, 0);
+  const totalElevation = calculateTotalElevation(completedSessions);
 
   return (
     <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-900 via-emerald-950 to-slate-950 text-white shadow-xl shadow-emerald-950/20 border border-emerald-800/40 transition-all duration-300 ${

@@ -1,10 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { 
-  HeartPulse, 
-  Mountain, 
-  ShieldCheck, 
-  Dumbbell, 
-  Footprints, 
   TrendingUp, 
   Plus, 
   Target,
@@ -28,6 +23,17 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { useAppContext } from '../context/AppContext';
+import { useMetrics } from '../hooks/useMetrics';
+import { METRIC_ICONS } from '../constants/metricsConstants';
+import { MONTH_OPTIONS, getDefaultMonthValue } from '../constants/calendarConstants';
+import { 
+  calculateMetricProgress,
+  calculateVam,
+  calculateCardiacDrift,
+  calculateHrr,
+  calculateIsometricEndurance,
+  calculateAcwr
+} from '../utils/metricsCalculator';
 
 ChartJS.register(
   CategoryScale,
@@ -40,43 +46,22 @@ ChartJS.register(
   Filler
 );
 
-const METRIC_ICONS = {
-  HeartPulse: HeartPulse,
-  Mountain: Mountain,
-  ShieldCheck: ShieldCheck,
-  Dumbbell: Dumbbell,
-  Footprints: Footprints,
-  TrendingUp: TrendingUp
-};
-
-const calculateMetricProgress = (metric) => {
-  if (!metric) return 0;
-  const current = parseFloat(metric.currentValue) || 0;
-  const target = parseFloat(metric.targetNumericValue) || 0;
-
-  if (metric.key === 'cardiacDrift') {
-    if (current <= 0) return 0;
-    if (target <= 0) return 100;
-    if (current <= target) return 100;
-    return Math.min(100, Math.max(0, Math.round((target / current) * 100)));
-  }
-
-  if (metric.key === 'acwr') {
-    if (current >= 0.8 && current <= 1.3) return 100;
-    if (current < 0.8 && current > 0) return Math.min(100, Math.max(0, Math.round((current / 0.8) * 100)));
-    if (current > 1.3) return Math.min(100, Math.max(0, Math.round((1.3 / current) * 100)));
-    return 0;
-  }
-
-  if (target <= 0) return 0;
-  return Math.min(100, Math.max(0, Math.round((current / target) * 100)));
-};
-
 const MetricsTracker = React.memo(({ darkMode }) => {
   const { metrics, handleAddMetricTest: onAddMetricTest, handleDeleteMetricTest: onDeleteMetricTest } = useAppContext();
-  const [selectedMetricKey, setSelectedMetricKey] = useState(metrics[0]?.key || 'vam');
-  const [activeModalMetric, setActiveModalMetric] = useState(null);
-  const [deleteTarget, setDeleteTarget] = useState(null);
+  
+  const {
+    selectedMetricKey,
+    setSelectedMetricKey,
+    activeModalMetric,
+    setActiveModalMetric,
+    deleteTarget,
+    setDeleteTarget,
+    activeMetric,
+    history,
+    pctChange,
+    chartData,
+    chartOptions
+  } = useMetrics(metrics, darkMode);
 
   if (!metrics || metrics.length === 0) {
     return (
@@ -85,75 +70,6 @@ const MetricsTracker = React.memo(({ darkMode }) => {
       </div>
     );
   }
-
-  const activeMetric = metrics.find(m => m.key === selectedMetricKey) || metrics[0];
-  const history = activeMetric?.history || [];
-
-  const chartLabels = history.map(h => h.label);
-  const chartValues = history.map(h => h.value);
-
-  const firstValue = history[0]?.value || activeMetric.currentValue;
-  const latestValue = activeMetric.currentValue;
-  const diff = latestValue - firstValue;
-  const pctChange = firstValue ? ((diff / firstValue) * 100).toFixed(1) : 0;
-
-  const chartData = useMemo(() => ({
-    labels: chartLabels,
-    datasets: [
-      {
-        label: activeMetric.title,
-        data: chartValues,
-        borderColor: darkMode ? '#46a463' : '#1b4929',
-        backgroundColor: darkMode ? 'rgba(70, 164, 99, 0.2)' : 'rgba(27, 73, 41, 0.1)',
-        fill: true,
-        tension: 0.35,
-        pointBackgroundColor: darkMode ? '#46a463' : '#1b4929',
-        pointBorderColor: '#ffffff',
-        pointBorderWidth: 2,
-        pointRadius: 6,
-        pointHoverRadius: 8,
-      }
-    ]
-  }), [chartLabels, chartValues, activeMetric.title, darkMode]);
-
-  const chartOptions = useMemo(() => ({
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: darkMode ? '#0e1b12' : '#ffffff',
-        titleColor: darkMode ? '#f8fafc' : '#0f172a',
-        bodyColor: darkMode ? '#46a463' : '#1b4929',
-        borderColor: darkMode ? '#1c3624' : '#cbd5e1',
-        borderWidth: 1,
-        padding: 12,
-        boxPadding: 6,
-        usePointStyle: true,
-        callbacks: {
-          label: (context) => ` ${context.parsed.y} ${activeMetric.unit}`
-        }
-      }
-    },
-    scales: {
-      x: {
-        grid: { display: false },
-        ticks: {
-          color: darkMode ? '#cbd5e1' : '#64748b',
-          font: { family: 'Plus Jakarta Sans', weight: 600 }
-        }
-      },
-      y: {
-        grid: {
-          color: darkMode ? 'rgba(46, 90, 58, 0.35)' : 'rgba(226, 232, 240, 0.8)'
-        },
-        ticks: {
-          color: darkMode ? '#cbd5e1' : '#64748b',
-          font: { family: 'Plus Jakarta Sans' }
-        }
-      }
-    }
-  }), [darkMode, activeMetric.unit]);
 
   return (
     <div className="space-y-6">
@@ -559,31 +475,6 @@ const MetricsTracker = React.memo(({ darkMode }) => {
 
 export default MetricsTracker;
 
-const MONTH_OPTIONS = [
-  { value: '2026-07', label: 'Juil 26', fullLabel: 'Juillet 2026' },
-  { value: '2026-08', label: 'Août 26', fullLabel: 'Août 2026' },
-  { value: '2026-09', label: 'Sept 26', fullLabel: 'Septembre 2026' },
-  { value: '2026-10', label: 'Oct 26', fullLabel: 'Octobre 2026' },
-  { value: '2026-11', label: 'Nov 26', fullLabel: 'Novembre 2026' },
-  { value: '2026-12', label: 'Déc 26', fullLabel: 'Décembre 2026' },
-  { value: '2027-01', label: 'Janv 27', fullLabel: 'Janvier 2027' },
-  { value: '2027-02', label: 'Févr 27', fullLabel: 'Février 2027' },
-  { value: '2027-03', label: 'Mars 27', fullLabel: 'Mars 2027' },
-  { value: '2027-04', label: 'Avr 27', fullLabel: 'Avril 2027' },
-  { value: '2027-05', label: 'Mai 27', fullLabel: 'Mai 2027' },
-  { value: '2027-06', label: 'Juin 27', fullLabel: 'Juin 2027' },
-  { value: '2027-07', label: 'Juil 27', fullLabel: 'Juillet 2027' },
-];
-
-const getDefaultMonthValue = () => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const currentYM = `${year}-${month}`;
-  const found = MONTH_OPTIONS.find(m => m.value === currentYM);
-  return found ? found.value : '2026-07';
-};
-
 function MetricFormModal({ metric, onClose, onSubmit }) {
   const [selectedMonthValue, setSelectedMonthValue] = useState(getDefaultMonthValue);
   const selectedMonthObj = MONTH_OPTIONS.find(m => m.value === selectedMonthValue) || MONTH_OPTIONS[0];
@@ -617,111 +508,73 @@ function MetricFormModal({ metric, onClose, onSubmit }) {
   // Handlers
   const handleVamSubmit = (e) => {
     e.preventDefault();
-    const min = parseFloat(vamMin) || 0;
-    const sec = parseFloat(vamSec) || 0;
-    const totalHours = (min + sec / 60) / 60;
-    const fc = parseFloat(vamFc) || 0;
-    const sac = parseFloat(vamSac) || 0;
-    if (totalHours <= 0) return;
-    const vam = Math.round(500 / totalHours);
-    const efficiencyIndex = fc > 0 ? (vam / fc).toFixed(2) : '0';
-
-    onSubmit('vam', vam, label, {
+    const res = calculateVam(vamMin, vamSec, vamFc, vamSac);
+    if (!res) return;
+    onSubmit('vam', res.vam, label, {
       date: selectedMonthValue,
-      efficiencyIndex,
-      fcMoy: fc,
-      poidsSac: sac,
-      tempsTotal: `${min}m ${sec}s`
+      efficiencyIndex: res.efficiencyIndex,
+      fcMoy: res.fcMoy,
+      poidsSac: res.poidsSac,
+      tempsTotal: res.tempsTotal
     });
   };
 
   const handleDriftSubmit = (e) => {
     e.preventDefault();
-    const f1 = parseFloat(fc1) || 0;
-    const f2 = parseFloat(fc2) || 0;
-    if (f1 <= 0) return;
-    const driftPct = parseFloat((((f2 - f1) / f1) * 100).toFixed(1));
-    onSubmit('cardiacDrift', driftPct, label, { date: selectedMonthValue, fc1: f1, fc2: f2 });
+    const res = calculateCardiacDrift(fc1, fc2);
+    if (!res) return;
+    onSubmit('cardiacDrift', res.driftPct, label, { date: selectedMonthValue, fc1: res.fc1, fc2: res.fc2 });
   };
 
   const handleHrrSubmit = (e) => {
     e.preventDefault();
-    const peak = parseFloat(fcPeak) || 0;
-    const f1 = parseFloat(fc1min) || 0;
-    const f2 = parseFloat(fc2min) || 0;
-    const delta1 = peak - f1;
-    const delta2 = peak - f2;
-    onSubmit('hrr', delta1, label, { date: selectedMonthValue, fcPeak: peak, fc1min: f1, fc2min: f2, delta2min: delta2 });
+    const res = calculateHrr(fcPeak, fc1min, fc2min);
+    onSubmit('hrr', res.delta1, label, { date: selectedMonthValue, fcPeak: res.fcPeak, fc1min: res.fc1min, fc2min: res.fc2min, delta2min: res.delta2 });
   };
 
   const handleIsoSubmit = (e) => {
     e.preventDefault();
-    const gMin = parseFloat(gainageMin) || 0;
-    const gSec = parseFloat(gainageSec) || 0;
-    const cMin = parseFloat(chaiseMin) || 0;
-    const cSec = parseFloat(chaiseSec) || 0;
-    const totalGainage = gMin * 60 + gSec;
-    const totalChaise = cMin * 60 + cSec;
-    onSubmit('isometricEndurance', totalGainage, label, {
+    const res = calculateIsometricEndurance(gainageMin, gainageSec, chaiseMin, chaiseSec);
+    onSubmit('isometricEndurance', res.totalGainage, label, {
       date: selectedMonthValue,
-      tempsGainageSec: totalGainage,
-      tempsChaiseSec: totalChaise
+      tempsGainageSec: res.tempsGainageSec,
+      tempsChaiseSec: res.tempsChaiseSec
     });
   };
 
   const handleAcwrSubmit = (e) => {
     e.preventDefault();
-    const aigue = parseFloat(chargeAigue) || 0;
-    const chronique = parseFloat(chargeChronique) || 0;
-    if (chronique <= 0) return;
-    const acwr = parseFloat((aigue / chronique).toFixed(2));
-    onSubmit('acwr', acwr, label, { date: selectedMonthValue, chargeAigue: aigue, chargeChronique: chronique });
+    const res = calculateAcwr(chargeAigue, chargeChronique);
+    if (!res) return;
+    onSubmit('acwr', res.acwr, label, { date: selectedMonthValue, chargeAigue: res.chargeAigue, chargeChronique: res.chargeChronique });
   };
 
   // Preview computations
   const getPreviewText = () => {
     if (metric.key === 'vam') {
-      const min = parseFloat(vamMin) || 0;
-      const sec = parseFloat(vamSec) || 0;
-      const totalHours = (min + sec / 60) / 60;
-      const fc = parseFloat(vamFc) || 0;
-      if (totalHours > 0) {
-        const vam = Math.round(500 / totalHours);
-        const eff = fc > 0 ? (vam / fc).toFixed(2) : '-';
-        return `VAM calculée : ${vam} m/h | Indice d'efficacité : ${eff}`;
+      const res = calculateVam(vamMin, vamSec, vamFc, vamSac);
+      if (res) {
+        return `VAM calculée : ${res.vam} m/h | Indice d'efficacité : ${res.efficiencyIndex}`;
       }
     } else if (metric.key === 'cardiacDrift') {
-      const f1 = parseFloat(fc1) || 0;
-      const f2 = parseFloat(fc2) || 0;
-      if (f1 > 0 && f2 > 0) {
-        const drift = (((f2 - f1) / f1) * 100).toFixed(1);
-        return `Dérive cardiaque calculée : ${drift}%`;
+      const res = calculateCardiacDrift(fc1, fc2);
+      if (res) {
+        return `Dérive cardiaque calculée : ${res.driftPct}%`;
       }
     } else if (metric.key === 'hrr') {
-      const peak = parseFloat(fcPeak) || 0;
-      const f1 = parseFloat(fc1min) || 0;
-      const f2 = parseFloat(fc2min) || 0;
-      if (peak > 0 && f1 > 0) {
-        const d1 = peak - f1;
-        const d2 = f2 > 0 ? peak - f2 : null;
-        return `Delta 1 min = -${d1} bpm${d2 !== null ? ` | Delta 2 min = -${d2} bpm` : ''}`;
+      const res = calculateHrr(fcPeak, fc1min, fc2min);
+      if (res.fcPeak > 0 && res.fc1min > 0) {
+        return `Delta 1 min = -${res.delta1} bpm${res.fc2min > 0 ? ` | Delta 2 min = -${res.delta2} bpm` : ''}`;
       }
     } else if (metric.key === 'isometricEndurance') {
-      const gMin = parseFloat(gainageMin) || 0;
-      const gSec = parseFloat(gainageSec) || 0;
-      const cMin = parseFloat(chaiseMin) || 0;
-      const cSec = parseFloat(chaiseSec) || 0;
-      const tG = gMin * 60 + gSec;
-      const tC = cMin * 60 + cSec;
-      if (tG > 0 || tC > 0) {
-        return `Gainage: ${Math.floor(tG/60)}m ${tG%60}s (${tG}s) | Chaise: ${Math.floor(tC/60)}m ${tC%60}s (${tC}s)`;
+      const res = calculateIsometricEndurance(gainageMin, gainageSec, chaiseMin, chaiseSec);
+      if (res.totalGainage > 0 || res.totalChaise > 0) {
+        return `Gainage: ${Math.floor(res.totalGainage/60)}m ${res.totalGainage%60}s (${res.totalGainage}s) | Chaise: ${Math.floor(res.totalChaise/60)}m ${res.totalChaise%60}s (${res.totalChaise}s)`;
       }
     } else if (metric.key === 'acwr') {
-      const aigue = parseFloat(chargeAigue) || 0;
-      const chronique = parseFloat(chargeChronique) || 0;
-      if (chronique > 0) {
-        const ratio = (aigue / chronique).toFixed(2);
-        return `ACWR calculé : ${ratio}`;
+      const res = calculateAcwr(chargeAigue, chargeChronique);
+      if (res) {
+        return `ACWR calculé : ${res.acwr}`;
       }
     }
     return null;

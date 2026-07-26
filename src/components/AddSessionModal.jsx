@@ -1,23 +1,12 @@
 import React, { useState } from 'react';
 import { X, Plus, Trash2 } from 'lucide-react';
+import { parseInitialExercises, parseDurationComponents } from '../utils/sessionUtils';
 
 export default function AddSessionModal({ defaultDate, sessionToEdit, onClose, onSave }) {
   const isEditing = Boolean(sessionToEdit);
   const [selectedType, setSelectedType] = useState(
     isEditing ? (sessionToEdit.type === 'cardio' ? 'stairclimber' : sessionToEdit.type) : 'stairclimber'
   );
-
-  const parseInitialExercises = (session) => {
-    if (!session || !session.exercises) return [''];
-    if (Array.isArray(session.exercises)) {
-      return session.exercises.length > 0 ? session.exercises : [''];
-    }
-    if (typeof session.exercises === 'string') {
-      const lines = session.exercises.split('\n').map(s => s.trim()).filter(Boolean);
-      return lines.length > 0 ? lines : [''];
-    }
-    return [''];
-  };
 
   const [exerciseList, setExerciseList] = useState(() => parseInitialExercises(sessionToEdit));
 
@@ -37,24 +26,6 @@ export default function AddSessionModal({ defaultDate, sessionToEdit, onClose, o
     } else {
       setExerciseList(exerciseList.filter((_, i) => i !== index));
     }
-  };
-
-  const parseDurationComponents = (durationStr) => {
-    if (!durationStr) return { hours: 1, minutes: 0 };
-    const lower = durationStr.toLowerCase().trim();
-    if (lower.includes('h')) {
-      const parts = lower.split('h');
-      const hours = parseInt(parts[0], 10) || 0;
-      const mins = parseInt(parts[1], 10) || 0;
-      return { hours, minutes: mins };
-    }
-    if (lower.includes('m')) {
-      const mins = parseInt(lower.replace(/[^0-9]/g, ''), 10) || 0;
-      return { hours: 0, minutes: mins };
-    }
-    const match = lower.match(/\d+/);
-    const totalMins = match ? parseInt(match[0], 10) : 60;
-    return { hours: Math.floor(totalMins / 60), minutes: totalMins % 60 };
   };
 
   const initialDuration = parseDurationComponents(sessionToEdit?.duration);
