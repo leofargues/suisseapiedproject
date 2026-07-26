@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   HeartPulse, 
   Mountain, 
@@ -72,7 +72,7 @@ const calculateMetricProgress = (metric) => {
   return Math.min(100, Math.max(0, Math.round((current / target) * 100)));
 };
 
-export default function MetricsTracker({ darkMode }) {
+const MetricsTracker = React.memo(({ darkMode }) => {
   const { metrics, handleAddMetricTest: onAddMetricTest, handleDeleteMetricTest: onDeleteMetricTest } = useAppContext();
   const [selectedMetricKey, setSelectedMetricKey] = useState(metrics[0]?.key || 'vam');
   const [activeModalMetric, setActiveModalMetric] = useState(null);
@@ -97,7 +97,7 @@ export default function MetricsTracker({ darkMode }) {
   const diff = latestValue - firstValue;
   const pctChange = firstValue ? ((diff / firstValue) * 100).toFixed(1) : 0;
 
-  const chartData = {
+  const chartData = useMemo(() => ({
     labels: chartLabels,
     datasets: [
       {
@@ -114,9 +114,9 @@ export default function MetricsTracker({ darkMode }) {
         pointHoverRadius: 8,
       }
     ]
-  };
+  }), [chartLabels, chartValues, activeMetric.title, darkMode]);
 
-  const chartOptions = {
+  const chartOptions = useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -153,7 +153,7 @@ export default function MetricsTracker({ darkMode }) {
         }
       }
     }
-  };
+  }), [darkMode, activeMetric.unit]);
 
   return (
     <div className="space-y-6">
@@ -555,7 +555,9 @@ export default function MetricsTracker({ darkMode }) {
 
     </div>
   );
-}
+});
+
+export default MetricsTracker;
 
 const MONTH_OPTIONS = [
   { value: '2026-07', label: 'Juil 26', fullLabel: 'Juillet 2026' },

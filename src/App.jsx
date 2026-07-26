@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import GlobalErrorBoundary from './components/GlobalErrorBoundary';
 import Navbar from './components/Navbar';
 import CountdownWidget from './components/CountdownWidget';
@@ -62,15 +62,30 @@ export default function App() {
     e.target.value = '';
   };
 
+  const handleOpenDiagnostic = useCallback(() => setIsDiagnosticOpen(true), []);
+  
+  const handleMainAppPageChange = useCallback((page) => setMainAppPage(page), []);
+  
+  const handleAddSession = useCallback((date) => {
+    setEditingSession(null);
+    setAddSessionDate(date);
+    setIsAddSessionOpen(true);
+  }, []);
+  
+  const handleEditSession = useCallback((session) => {
+    setEditingSession(session);
+    setIsAddSessionOpen(true);
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col font-sans transition-colors pb-24 sm:pb-0">
       
       <Navbar 
         darkMode={darkMode} 
         setDarkMode={setDarkMode} 
-        onOpenDiagnostic={() => setIsDiagnosticOpen(true)}
+        onOpenDiagnostic={handleOpenDiagnostic}
         mainAppPage={mainAppPage}
-        onMainAppPageChange={setMainAppPage}
+        onMainAppPageChange={handleMainAppPageChange}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -132,15 +147,8 @@ export default function App() {
             {activeTab === 'dashboard' && (
               <div className="space-y-8">
                 <TrainingCalendar 
-                  onAddSession={(date) => {
-                    setEditingSession(null);
-                    setAddSessionDate(date);
-                    setIsAddSessionOpen(true);
-                  }}
-                  onEditSession={(session) => {
-                    setEditingSession(session);
-                    setIsAddSessionOpen(true);
-                  }}
+                  onAddSession={handleAddSession}
+                  onEditSession={handleEditSession}
                 />
                 <MetricsTracker darkMode={darkMode} />
                 <NotesSection />
@@ -149,15 +157,8 @@ export default function App() {
 
             {activeTab === 'calendar' && (
               <TrainingCalendar 
-                onAddSession={(date) => {
-                  setEditingSession(null);
-                  setAddSessionDate(date);
-                  setIsAddSessionOpen(true);
-                }}
-                onEditSession={(session) => {
-                  setEditingSession(session);
-                  setIsAddSessionOpen(true);
-                }}
+                onAddSession={handleAddSession}
+                onEditSession={handleEditSession}
               />
             )}
 

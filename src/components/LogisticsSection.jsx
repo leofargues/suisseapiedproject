@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Backpack, Plus, Trash2, CheckSquare, Square } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
-export default function LogisticsSection() {
+const LogisticsSection = React.memo(() => {
   const { logistics, handleAddLogisticsElement: onAddElement, handleToggleLogisticsElement: onToggleElement, handleDeleteLogisticsElement: onDeleteElement } = useAppContext();
   const [newItemName, setNewItemName] = useState('');
   const [newItemQuantity, setNewItemQuantity] = useState(1);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = useCallback((e) => {
     e.preventDefault();
     if (!newItemName.trim()) return;
 
@@ -19,9 +19,9 @@ export default function LogisticsSection() {
 
     setNewItemName('');
     setNewItemQuantity(1);
-  };
+  }, [newItemName, newItemQuantity, onAddElement]);
 
-  const completedCount = logistics.filter(l => l.completed).length;
+  const completedCount = useMemo(() => logistics.filter(l => l.completed).length, [logistics]);
   const totalCount = logistics.length;
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
@@ -132,4 +132,6 @@ export default function LogisticsSection() {
       </div>
     </div>
   );
-}
+});
+
+export default LogisticsSection;

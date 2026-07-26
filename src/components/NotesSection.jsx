@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { NotebookPen, Plus, Flame, Calendar, Trash2, Search } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 const CATEGORIES = ["Tous", "Fatigue", "Équipement", "Sensations", "Nutrition", "Météo"];
 
-export default function NotesSection() {
+const NotesSection = React.memo(() => {
   const { notes, handleAddNote: onAddNote, handleDeleteNote: onDeleteNote } = useAppContext();
   const [selectedCategory, setSelectedCategory] = useState("Tous");
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const filteredNotes = notes.filter(note => {
+  const filteredNotes = useMemo(() => notes.filter(note => {
     const matchesCategory = selectedCategory === "Tous" || note.category === selectedCategory;
     const matchesSearch = searchQuery === "" || 
       note.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
       note.content.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
-  });
+  }), [notes, selectedCategory, searchQuery]);
 
   return (
     <div className="space-y-6">
@@ -244,4 +244,6 @@ export default function NotesSection() {
 
     </div>
   );
-}
+});
+
+export default NotesSection;

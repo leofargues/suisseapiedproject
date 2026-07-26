@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Map, MapPin, Navigation, Mountain, ExternalLink, CheckCircle2, Circle, Clock, TrendingUp, TrendingDown, FileText, Edit3, ChevronDown, ChevronUp } from 'lucide-react';
 import MapInteractive from './Map/MapInteractive';
 import StageValidationModal from './Map/StageValidationModal';
 import { SWISS_STAGES } from '../data/swissStages';
 import { useAppContext } from '../context/AppContext';
 
-export default function MapSection() {
+const MapSection = React.memo(() => {
   const { stageLogs, handlePersistStageLogs } = useAppContext();
   
   const [selectedStage, setSelectedStage] = useState(SWISS_STAGES[0]);
@@ -23,7 +23,7 @@ export default function MapSection() {
     notes: ''
   });
 
-  const openStageModal = (stage, e) => {
+  const openStageModal = useCallback((stage, e) => {
     if (e) e.stopPropagation();
     const existing = stageLogs?.[stage.id];
     if (existing) {
@@ -49,9 +49,9 @@ export default function MapSection() {
       });
     }
     setActiveModalStage(stage);
-  };
+  }, [stageLogs]);
 
-  const handleSaveStageLog = (e) => {
+  const handleSaveStageLog = useCallback((e) => {
     e.preventDefault();
     if (!activeModalStage) return;
 
@@ -74,9 +74,9 @@ export default function MapSection() {
       handlePersistStageLogs(updatedLogs);
     }
     setActiveModalStage(null);
-  };
+  }, [activeModalStage, formData, stageLogs, handlePersistStageLogs]);
 
-  const handleDeleteStageLog = (stageId) => {
+  const handleDeleteStageLog = useCallback((stageId) => {
     const updatedLogs = { ...stageLogs };
     delete updatedLogs[stageId];
     
@@ -84,9 +84,9 @@ export default function MapSection() {
       handlePersistStageLogs(updatedLogs);
     }
     setActiveModalStage(null);
-  };
+  }, [stageLogs, handlePersistStageLogs]);
 
-  const completedCount = Object.keys(stageLogs || {}).length;
+  const completedCount = useMemo(() => Object.keys(stageLogs || {}).length, [stageLogs]);
 
   return (
     <div className="space-y-6 relative">
@@ -355,4 +355,6 @@ export default function MapSection() {
       />
     </div>
   );
-}
+});
+
+export default MapSection;

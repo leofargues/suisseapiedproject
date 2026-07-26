@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -124,7 +124,7 @@ const MONTH_NAMES = [
 
 const DAYS_OF_WEEK = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
-export default function TrainingCalendar({ onAddSession, onEditSession }) {
+const TrainingCalendar = React.memo(({ onAddSession, onEditSession }) => {
   const { sessions, handleToggleSession: onToggleSession, handleDeleteSession: onDeleteSession } = useAppContext();
   const [currentDate, setCurrentDate] = useState(new Date(2026, 6, 1));
   const [viewMode, setViewMode] = useState('month'); // 'month' | 'week' | '3days'
@@ -217,20 +217,23 @@ export default function TrainingCalendar({ onAddSession, onEditSession }) {
 
   const totalDaysInMonth = lastDayOfMonth.getDate();
 
-  const sessionsByDate = {};
-  sessions.forEach(session => {
-    if (!sessionsByDate[session.date]) {
-      sessionsByDate[session.date] = [];
-    }
-    sessionsByDate[session.date].push(session);
-  });
+  const sessionsByDate = useMemo(() => {
+    const map = {};
+    sessions.forEach(session => {
+      if (!map[session.date]) {
+        map[session.date] = [];
+      }
+      map[session.date].push(session);
+    });
+    return map;
+  }, [sessions]);
 
   const selectedDaySessions = selectedDateStr ? (sessionsByDate[selectedDateStr] || []) : [];
 
-  const monthSessions = sessions.filter(s => {
+  const monthSessions = useMemo(() => sessions.filter(s => {
     const sDate = new Date(s.date);
     return sDate.getFullYear() === year && sDate.getMonth() === month;
-  });
+  }), [sessions, year, month]);
 
   const monthCompletedCount = monthSessions.filter(s => s.completed).length;
   const monthDPlus = monthSessions
@@ -1051,4 +1054,6 @@ export default function TrainingCalendar({ onAddSession, onEditSession }) {
 
     </div>
   );
-}
+});
+
+export default TrainingCalendar;
